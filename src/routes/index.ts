@@ -1,20 +1,21 @@
 import { Router } from "express"
-import { companiesRoutes } from "./companies.routes"
-import { customersRoutes } from "./customers.routes"
-import { helloRoutes } from "./hello.routes"
-import { rolesRoutes } from "./roles.routes"
-import { usersRoutes } from "./users.routes"
+import { adminsRoutes } from "./admins.routes"
+import { donationsRoutes } from "./donations.routes"
+
+import { studentsRoutes } from "./students.routes "
 
 
 const router = Router()
 
-router.use('/hello', helloRoutes)
-router.use('/users', usersRoutes)
+//donations routes
+router.use('/donates', donationsRoutes)
 
-//Institute routes
-router.use('/roles', rolesRoutes)
-router.use('/companies', companiesRoutes)
-router.use('/customers', customersRoutes)
+// students routes
+router.use('/students', studentsRoutes)
 
+//regristrations routes
+router.use('/admins', adminsRoutes)
+
+//users routes
 
 export {router}

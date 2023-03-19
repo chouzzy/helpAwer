@@ -10,38 +10,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Roles {
+model Donations {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String
+  phoneNumber String
+  gender      String
+  birth       String
+  country     String
+  state       String
+  city        String
+  address     String
+  cpf         String
+  rg         String
+
+  valuePaid     Int
+  paymentMethod String
+  paymentStatus String
+  paymentDate   String
+  createdAt     DateTime @default(now())
+
+  @@map("Donations")
+}
+
+model Students {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String @unique
+  gender      String
+  birth       String
+  phoneNumber String
+  country     String
+  state       String
+  city        String
+  address     String
+
+  cpf                      String
+  rg                       String
+  selfDeclaration          String
+  oldSchool                String
+  oldSchoolAdress          String
+  highSchoolGraduationDate String
+  highSchoolPeriod         String
+  metUsMethod              String
+  exStudent                String
+
+  valuePaid     Int
+  paymentMethod String
+  paymentStatus String
+  paymentDate   String
+  createdAt     DateTime @default(now())
+
+  @@map("Students")
+}
+
+model Admins {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
+  name      String
+  email     String   @unique
+  username  String   @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  @@map("Roles")
-}
-
-model Companies {
-  id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now())
-  Customers Customers[]
-
-  @@map("Companies")
-}
-
-model Customers {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  company    Companies @relation(fields: [company_id], references: [id])
-  company_id String    @db.ObjectId
-  teams      Teams[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now())
-
-  @@map("Customers")
-}
-
-type Teams {
-  id   String
-  name String
+  @@map("Admins")
 }

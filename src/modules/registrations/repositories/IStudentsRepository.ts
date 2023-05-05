@@ -1,7 +1,7 @@
 import { validationResponse } from "../../../types"
-import { Students } from "../entities/Students"
-import { CreateStudentRequestProps } from "../useCases/createStudents/CreateStudentsController"
-import { UpdateStudentRequestProps } from "../useCases/updateStudents/UpdateStudentController"
+import { Students, purcharsedSubscriptions } from "../entities/Students"
+import { CreateStudentRequestProps } from "../useCases/Students/createStudents/CreateStudentsController"
+import { UpdateStudentRequestProps } from "../useCases/Students/updateStudents/UpdateStudentController"
 
 
 interface IStudentsRepository {
@@ -10,7 +10,7 @@ interface IStudentsRepository {
         id: Students["id"] | undefined,
         email: Students["email"] | undefined,
         state: Students["state"] | undefined,
-        paymentStatus: Students["paymentStatus"] | undefined,
+        paymentStatus: purcharsedSubscriptions["paymentStatus"] | undefined,
         actualPage: number
     ): Promise<Students[] | validationResponse>
 

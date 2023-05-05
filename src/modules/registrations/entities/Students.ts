@@ -1,3 +1,5 @@
+
+
 class Students {
 
     id!:            string
@@ -20,12 +22,22 @@ class Students {
     highSchoolPeriod!:         string
     metUsMethod!:              string
     exStudent!:                string
-  
-    valuePaid!:     number
-    paymentMethod!: string
-    paymentStatus!: string
-    paymentDate!:   string
+    stripeCustomerID!:         string
+    
+    purcharsedSubscriptions!: purcharsedSubscriptions[]
     createdAt!:     Date
 }
 
-export {Students}
+interface purcharsedSubscriptions {
+    schoolClassID: string
+    productID:     string
+    productName:   string
+    paymentMethod: string
+    paymentStatus: string
+    paymentDate:   string
+    valuePaid:     number
+}
+
+
+
+export {Students, purcharsedSubscriptions}

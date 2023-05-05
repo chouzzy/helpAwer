@@ -4,6 +4,7 @@ class Admins {
     email!:     string
     username!:  string
     password!:  string
+    refresh_token?: string
     createdAt!:  Date
     updatedAt?:  Date
   }

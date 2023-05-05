@@ -1,8 +1,9 @@
 import { validationResponse } from "../../../types"
 import { Admins } from "../entities/Admins"
-import { CreateAdminRequestProps } from "../useCases/createAdmins/CreateAdminController"
-import { UpdateAdminRequestProps } from "../useCases/updateAdmins/UpdateAdminsController"
-import { UpdateAdminPasswordRequestProps } from "../useCases/updateAdminsPassword/UpdateAdminsPasswordController"
+import { AuthenticateAdminRequestProps } from "../useCases/Admins/authenticateAdmin/AuthenticateAdminController"
+import { CreateAdminRequestProps } from "../useCases/Admins/createAdmins/CreateAdminController"
+import { UpdateAdminRequestProps } from "../useCases/Admins/updateAdmins/UpdateAdminsController"
+import { UpdateAdminPasswordRequestProps } from "../useCases/Admins/updateAdminsPassword/UpdateAdminsPasswordController"
 
 
 interface IAdminsRepository {
@@ -22,6 +23,8 @@ interface IAdminsRepository {
     updateAdminPassword(adminData: UpdateAdminPasswordRequestProps, adminID: Admins["id"]): Promise<Admins | validationResponse>
 
     deleteAdmin(adminID: Admins["id"]): Promise<Admins| validationResponse>
+
+    authenticateAdmin({ username, password }: AuthenticateAdminRequestProps): Promise<string|validationResponse>
 
 }
 

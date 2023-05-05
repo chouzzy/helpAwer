@@ -1,10 +1,16 @@
 import { Prisma } from "@prisma/client";
+import { compare, hash } from "bcryptjs";
+import dayjs from "dayjs";
+import { sign } from "jsonwebtoken";
 import { prisma } from "../../../../prisma";
 import { validationResponse } from "../../../../types";
 import { Admins } from "../../entities/Admins";
-import { CreateAdminRequestProps } from "../../useCases/createAdmins/CreateAdminController";
-import { UpdateAdminRequestProps } from "../../useCases/updateAdmins/UpdateAdminsController";
-import { UpdateAdminPasswordRequestProps } from "../../useCases/updateAdminsPassword/UpdateAdminsPasswordController";
+import { GenerateRefreshToken } from "../../provider/GenerateRefreshToken";
+import { GenerateTokenProvider } from "../../provider/GenerateTokenProvider";
+import { AuthenticateAdminRequestProps } from "../../useCases/Admins/authenticateAdmin/AuthenticateAdminController";
+import { CreateAdminRequestProps } from "../../useCases/Admins/createAdmins/CreateAdminController";
+import { UpdateAdminRequestProps } from "../../useCases/Admins/updateAdmins/UpdateAdminsController";
+import { UpdateAdminPasswordRequestProps } from "../../useCases/Admins/updateAdminsPassword/UpdateAdminsPasswordController";
 
 import { IAdminsRepository } from "../IAdminsRepository";
 
@@ -58,6 +64,7 @@ class AdminsRepository implements IAdminsRepository {
 
         try {
 
+            //busca usuario no banco pra ve se existe
             const searchedAdmin = await prisma.admins.findMany({
                 where: {
                     OR: [
@@ -67,6 +74,7 @@ class AdminsRepository implements IAdminsRepository {
                 },
             })
 
+            //Checa se email e usuario ja existem
             if (searchedAdmin.length > 0) {
 
                 if (searchedAdmin[0].email == adminData.email && searchedAdmin[0].username == adminData.username) {
@@ -84,12 +92,14 @@ class AdminsRepository implements IAdminsRepository {
 
             }
 
+            const passwordHash = await hash(adminData.password, 8)
+
             const createAdmin = await prisma.admins.create({
                 data: {
                     name: adminData.name,
                     email: adminData.email,
                     username: adminData.username,
-                    password: adminData.password,
+                    password: passwordHash,
                 }
             })
 
@@ -241,6 +251,105 @@ class AdminsRepository implements IAdminsRepository {
                 return { isValid: false, errorMessage: String(error), statusCode: 403 }
             }
         }
+    }
+
+    async authenticateAdmin({ username, password }: AuthenticateAdminRequestProps): Promise<validationResponse> {
+
+        try {
+
+            //Buscando o admin
+            const adminFound = await prisma.admins.findFirst({
+                where: {
+                    username: username
+                }
+            })
+
+            //Checando se o username está correto
+            if (!adminFound) {
+                return {
+                    isValid: false,
+                    statusCode: 403,
+                    errorMessage: "⛔ Username or password incorrect 1 ⛔"
+                }
+            }
+
+            //Checando se o password está correto
+            const passwordMatch = await compare(password, adminFound.password)
+            if (!passwordMatch) {
+                return {
+                    isValid: false,
+                    statusCode: 403,
+                    errorMessage: "⛔ Username or password incorrect 2 ⛔"
+                }
+            }
+
+
+            // Gerando o Token
+            const generateTokenProvider = new GenerateTokenProvider()
+            const token = await generateTokenProvider.execute(adminFound.id)
+
+
+
+
+            //////// RefreshToken ////////
+
+            //Buscando o RefreshToken do usuário logado
+            const adminRefreshToken = await prisma.refreshToken.findFirst({
+                where: {
+                    adminID: adminFound.id
+                }
+            })
+            
+            //Checando se o RefreshToken do usuário logado existe
+            if (!adminRefreshToken) {
+                const generateRefreshToken = new GenerateRefreshToken()
+                const refreshToken = await generateRefreshToken.execute(adminFound.id)
+
+                return { isValid: true, token: token, refreshToken: refreshToken, statusCode: 403 }
+            }
+
+
+
+
+
+            //////// Expiração ////////
+
+            //Checagem da expiração do Token encontrado
+            const refreshTokenExpired = dayjs().isAfter(dayjs.unix(adminRefreshToken.expires_at))
+
+            //Deleção dos RefreshTokens expirados
+            if (refreshTokenExpired) {
+
+                await prisma.refreshToken.deleteMany({
+                    where: {
+                        adminID: adminRefreshToken.adminID
+                    }
+                })
+                const generateRefreshToken = new GenerateRefreshToken()
+                const newRefreshToken = await generateRefreshToken.execute(adminRefreshToken.adminID)
+
+                return { isValid: true, token: token, refreshToken: newRefreshToken, statusCode: 202 }
+            }
+
+
+            //////// Refresh Token existente e não expirado ////////
+            // Retorno do novo token e refreshToken antigo que não foi expirado
+            return { isValid: true, token: token, refreshToken: adminRefreshToken, statusCode: 202 }
+
+
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientValidationError) {
+
+                const argumentPosition = error.message.search('Argument')
+                const mongoDBError = error.message.slice(argumentPosition)
+                return { isValid: false, errorMessage: mongoDBError, statusCode: 403 }
+
+            } else {
+                return { isValid: false, errorMessage: String(error), statusCode: 403 }
+            }
+        }
+
+
     }
 }
 

@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Donations {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          String @id @default(uuid()) @map("_id")
   name        String
   email       String
   phoneNumber String
@@ -22,19 +22,23 @@ model Donations {
   city        String
   address     String
   cpf         String
-  rg         String
+  rg          String
 
   valuePaid     Int
   paymentMethod String
   paymentStatus String
   paymentDate   String
-  createdAt     DateTime @default(now())
+
+  donationExpirationDate String
+
+  stripeCustomerID String
+  createdAt        DateTime @default(now())
 
   @@map("Donations")
 }
 
 model Students {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          String @id @default(uuid()) @map("_id")
   name        String
   email       String @unique
   gender      String
@@ -54,24 +58,69 @@ model Students {
   highSchoolPeriod         String
   metUsMethod              String
   exStudent                String
+  stripeCustomerID         String
 
-  valuePaid     Int
-  paymentMethod String
-  paymentStatus String
-  paymentDate   String
-  createdAt     DateTime @default(now())
+  purcharsedSubscriptions PurchasedSubscriptions[]
+  createdAt               DateTime                 @default(now())
 
   @@map("Students")
 }
 
 model Admins {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id            String        @id @default(uuid()) @map("_id")
+  name          String
+  email         String        @unique
+  username      String        @unique
+  password      String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
+  refresh_token RefreshToken?
 
   @@map("Admins")
+}
+
+model RefreshToken {
+  id         String @id @default(uuid()) @map("_id")
+  expires_at Int
+  admin      Admins @relation(fields: [adminID], references: [id])
+  adminID    String @unique
+
+  @@map("refresh_token")
+}
+
+model SchoolClass {
+  id                 String      @id @default(uuid()) @map("_id")
+  title              String
+  description        String
+  initHour           String
+  endHour            String
+  daysOfWeek         String
+  registrationStatus String
+  subscriptionPrice  Int
+  semester           String
+  year               String
+  stripeProductID    String
+  documents          Documents[]
+
+  @@map("SchoolClass")
+}
+
+model Documents {
+  id            String       @id @default(uuid()) @map("_id")
+  title         String
+  downloadLink  String
+  SchoolClass   SchoolClass? @relation(fields: [schoolClassId], references: [id])
+  schoolClassId String?
+
+  @@map("Documents")
+}
+
+type PurchasedSubscriptions {
+  schoolClassID String
+  productID     String
+  productName   String
+  paymentMethod String
+  paymentStatus String
+  paymentDate   String
+  valuePaid     Int
 }

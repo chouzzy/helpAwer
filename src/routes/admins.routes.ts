@@ -1,9 +1,10 @@
 import { Router } from "express"
-import { CreateAdminsController } from "../modules/registrations/useCases/createAdmins/CreateAdminController"
-import { DeleteAdminController } from "../modules/registrations/useCases/deleteAdmins/DeleteAdminController"
-import { ListAdminsController } from "../modules/registrations/useCases/listAdmins/ListAdminsController"
-import { UpdateAdminsController } from "../modules/registrations/useCases/updateAdmins/UpdateAdminsController"
-import { UpdateAdminsPasswordController } from "../modules/registrations/useCases/updateAdminsPassword/UpdateAdminsPasswordController"
+import { AuthenticateAdminsController } from "../modules/registrations/useCases/Admins/authenticateAdmin/AuthenticateAdminController"
+import { CreateAdminsController } from "../modules/registrations/useCases/Admins/createAdmins/CreateAdminController"
+import { DeleteAdminController } from "../modules/registrations/useCases/Admins/deleteAdmins/DeleteAdminController"
+import { ListAdminsController } from "../modules/registrations/useCases/Admins/listAdmins/ListAdminsController"
+import { UpdateAdminsController } from "../modules/registrations/useCases/Admins/updateAdmins/UpdateAdminsController"
+import { UpdateAdminsPasswordController } from "../modules/registrations/useCases/Admins/updateAdminsPassword/UpdateAdminsPasswordController"
 
 const adminsRoutes = Router()
 
@@ -21,6 +22,9 @@ adminsRoutes.put('/:adminID/updatePassword', updateAdminsPasswordController.hand
 
 const deleteAdminsController = new DeleteAdminController()
 adminsRoutes.delete('/:adminID/delete', deleteAdminsController.handle)
+
+const authenticateAdminsController = new AuthenticateAdminsController()
+adminsRoutes.post('/login', authenticateAdminsController.handle)
 
 
 export {adminsRoutes}
